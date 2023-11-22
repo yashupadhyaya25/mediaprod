@@ -1,1 +1,1 @@
-"C:\Users\Administrator\AppData\Local\Programs\Python\Python310\python.exe" "C:\invoices_ocr\backend\mail_ocr.py"
+"C:\Users\Administrator\AppData\Local\Programs\Python\Python310\python.exe" "C:\Github\mediaprod\Backend\mail_ocr.py"
