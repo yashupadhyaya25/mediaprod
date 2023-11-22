@@ -20,3 +20,8 @@ ML/Dataset/
 ML/Image/
 ML/Image/
 ML/Train_txt/
+
+# ignore npm build and node modules
+FRONTEND/build/
+FRONTEND/node_modules/
+*.pyc

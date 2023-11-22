@@ -16,7 +16,6 @@ enivronment = 'production'
 
 configur = ConfigParser()
 config_file_obj = configur.read('config.ini')
-
 model_path = configur.get(enivronment,'find_doc_type_model')
 encoder_path = configur.get(enivronment,'find_doc_type_encoder')
 
