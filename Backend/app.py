@@ -94,5 +94,9 @@ def ocr():
             shutil.move(user_upload_pdf_path+file_name,invoice_folder_path+'issue/'+file_name.rsplit('_',6)[0]+'.pdf')
             return jsonify({'data':'','message':'Error occured please ensure you have select the correct pdf'})
 
+@app.route('/v1/test', methods = ['GET'])
+def test():
+    return jsonify({'message':'Connection Succesfull'})
+
 if __name__ == '__main__':
 	app.run(debug = True)
