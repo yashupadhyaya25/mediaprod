@@ -25,3 +25,4 @@ ML/Train_txt/
 FRONTEND/build/
 FRONTEND/node_modules/
 *.pyc
+Backend/app.log
