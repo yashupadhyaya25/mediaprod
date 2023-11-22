@@ -11,7 +11,7 @@ Backend/web.config
 # ignore testing folder files
 Backend/Invoices/completed/*.pdf
 Backend/Invoices/issue/*.pdf
-Backend/User_Upload/Image/*.*
+Backend/User_Upload/Image/*.png
 Backend/User_Upload/Pdf/*.pdf
 
 # ignore all files from ML folder execpt .py and .pickle
