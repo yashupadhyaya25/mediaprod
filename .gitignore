@@ -5,6 +5,12 @@ Backend/config.ini
 Backend/gmail_creds.json
 Backend/gmail_token.json
 
+# ignore testing folder files
+Backend/Invoices/completed/*.pdf
+Backend/Invoices/issue/*.pdf
+Backend/User_Upload/Image/*.*
+Backend/User_Upload/Pdf/*.pdf
+
 # ignore all files from ML folder execpt .py and .pickle
 ML/ML - InvoicesPDF/
 ML/Dataset/
