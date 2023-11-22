@@ -1,0 +1,6 @@
+# ignore config.ini file
+config.ini
+
+# ignore gmail creds files
+gmail_creds.json
+gmail_token.json
