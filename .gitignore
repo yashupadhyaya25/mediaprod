@@ -4,3 +4,10 @@ config.ini
 # ignore gmail creds files
 gmail_creds.json
 gmail_token.json
+
+# ignore all files from ML folder execpt .py and .pickle
+ML/ML - InvoicesPDF/
+ML/Dataset/
+ML/Image/
+ML/Image/
+ML/Train_txt/
