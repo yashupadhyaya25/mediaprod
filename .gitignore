@@ -5,6 +5,9 @@ Backend/config.ini
 Backend/gmail_creds.json
 Backend/gmail_token.json
 
+# ignore web config
+Backend/web.config
+
 # ignore testing folder files
 Backend/Invoices/completed/*.pdf
 Backend/Invoices/issue/*.pdf
