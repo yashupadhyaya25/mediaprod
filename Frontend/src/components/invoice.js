@@ -22,7 +22,8 @@ function Invoice() {
 
     function handleSubmit(event) {
         event.preventDefault()
-        const url = 'http://localhost:5000/v1/ocr';
+        // const url = 'localhost:5000/v1/ocr';
+        const url = 'http://185.207.251.45:4005/v1/ocr';
         const formData = new FormData();
         formData.append('file', file);
         formData.append('fileName', file.name);
