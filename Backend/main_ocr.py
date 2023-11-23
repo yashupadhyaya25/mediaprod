@@ -58,9 +58,7 @@ class OCR():
             get_other_info['TOTAL_TTC'] = get_other_info['TOTAL_TTC'].str.replace(',','.')
             get_other_info['TOTAL_TVA'] = get_other_info['TOTAL_TVA'].str.replace(',','.')
             #### Calling OCR Modules as per DOC TYPE ####
-            
-            print(get_description_details)
-            print(get_other_info)
+
             return get_description_details,get_other_info,doc_type
         
         else :

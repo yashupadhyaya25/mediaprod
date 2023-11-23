@@ -78,6 +78,9 @@ class LCGClass():
                 
             invoice_date = LCGClass.getInvoiceDate(file_path)
             file_df['Invoice Date'] = invoice_date
+            invoice_number = LCGClass.getInvoiceNumber(file_path)
+            file_df['UNIQUE_IDENTIFICATION_NUMBER'] = invoice_number
+            
             file_df.rename(columns={0:'SKU',1:'Produits',2:'Prix',3:'Qté',4:'Taxe',5:'Sous-Total'},inplace=True)
             file_df = file_df.rename(columns={
                 'SKU' : 'CODE',
@@ -88,7 +91,7 @@ class LCGClass():
                 'Invoice Date' : 'INVOICE_DATE',
             })
             fp.close()
-            print(file_df)
+            # print(file_df)
             return file_df
         except Exception as e:
             # print(e)
@@ -149,16 +152,20 @@ class LCGClass():
                 main_df = pd.concat([temp_df,main_df],axis=1)
             fp.close()
             # print(main_df)
+            
             invoice_date = LCGClass.getInvoiceDate(file_path)
             main_df['Invoice Date'] = invoice_date
-            main_df = main_df.loc[:,['Sous-total (HT)','Total (HT)','EU-Norm-FR-5.5 (5.5000%)','Taxe','Sous-total (TTC)','Total (TTC)','Invoice Date']]
+            invoice_number = LCGClass.getInvoiceNumber(file_path)
+            main_df['UNIQUE_IDENTIFICATION_NUMBER'] = invoice_number
+            
+            main_df = main_df.loc[:,['Sous-total (HT)','Total (HT)','EU-Norm-FR-5.5 (5.5000%)','Taxe','Sous-total (TTC)','Total (TTC)','Invoice Date','UNIQUE_IDENTIFICATION_NUMBER']]
             main_df = main_df.rename(columns={
                 'Total (TTC)' : 'TOTAL_TTC',
                 'Total (HT)' : 'TOTAL_HT',
                 'Invoice Date' : 'INVOICE_DATE',
                 'Taxe' : 'TOTAL_TVA'
             })
-            print(main_df)
+            # print(main_df)
             return main_df
         except :
             fp.close()
@@ -205,13 +212,51 @@ class LCGClass():
         
         fp.close()
         return date_of_invoice
+    
+    def getInvoiceNumber(file_path) :
+        fp = open(file_path, 'rb')
+        rsrcmgr = PDFResourceManager()
+        laparams = LAParams(word_margin=0.1)
+        device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+        interpreter = PDFPageInterpreter(rsrcmgr, device)
+        pages = PDFPage.get_pages(fp)
+        final_df = pd.DataFrame()
+        X = 0
+        Y = 0
+        for page in pages:
+            interpreter.process_page(page)
+            layout = device.get_result()
+            for lobj in layout:
+                if isinstance(lobj, LTTextBox):
+                    df = pd.DataFrame(columns=['Y0','Y1','X0','X1','DETAIL'])
+                    text = lobj.get_text()     
+                    coordinate = str(lobj.bbox)[1:-1].split(",")
+                    df['Y0'] = [coordinate[0]]
+                    df['Y1'] = [coordinate[1]]
+                    df['X0'] = [coordinate[2]]
+                    df['X1'] = [coordinate[3]]
+                    df['DETAIL'] = text
+                    if 'Facture' in text:
+                        X = float(coordinate[1])
+                    if 'Facture' in text:
+                        Y = float(coordinate[1])
+                        Z = float(coordinate[3])
+                    final_df = pd.concat([final_df,df],axis=0,ignore_index=True)
         
+
+        final_df = final_df[final_df['Y1'].astype(float)<=float(X)]
+        final_df = final_df[final_df['Y1'].astype(float)>=float(Y)]
+        
+        final_df = final_df.replace(r'\n','', regex=True)
+        final_df = final_df.replace(r'Facture','', regex=True)
+        final_df = final_df.replace(r'#','', regex=True)
+        final_df = final_df[final_df.DETAIL.str.match('[0-9]*')]
+        final_df = final_df['DETAIL']
+        invoice_number  = final_df.values[0]
+        fp.close()
+        return invoice_number
+    
 if __name__ == '__main__':
-    import os
-    for file in os.listdir('Invoices/issue/'):
-        print(file)
-        LCGClass.getDescriptionDetails(r'Invoices/issue/'+file)
-        # break
-        LCGClass.getTotalDetails(r'Invoices/issue/'+file)
+    pass
         
 

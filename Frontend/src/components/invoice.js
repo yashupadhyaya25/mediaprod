@@ -14,7 +14,7 @@ function Invoice() {
 
     var host = config.host;
     var port = config.port;
-    var api_url = host + ':' + port
+    var api_url = 'http://' + host + ':' + port
     // console.log(api_url)
 
     function handleChange(event) {
