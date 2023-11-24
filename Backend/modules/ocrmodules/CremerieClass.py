@@ -7,6 +7,7 @@ from pdfminer.pdfparser import PDFParser
 from pdfminer.pdfdocument import PDFDocument
 import pandas as pd
 import numpy as np
+import os
 
 class CremerieClass():
     def getDescriptionDetails(file_path):
@@ -74,8 +75,11 @@ class CremerieClass():
             
             invoice_date = CremerieClass.getInvoiceDate(file_path)
             file_df['Invoice Date'] = invoice_date
+            invoice_number = CremerieClass.getInvoiceNumber(file_path)
+            file_df['UNIQUE_IDENTIFICATION_NUMBER'] = invoice_number
+            
             file_df.rename(columns={0:'Code',1:'Qté',2:'PU HT',3:'Montant HT',4:'TVA',5:'Description'},inplace=True)
-            file_df = file_df.loc[:,['Code','Description','Qté','PU HT','Montant HT','TVA','Invoice Date']]
+            file_df = file_df.loc[:,['Code','Description','Qté','PU HT','Montant HT','TVA','Invoice Date','UNIQUE_IDENTIFICATION_NUMBER']]
             file_df = file_df.rename(columns={
                 'Code' : 'CODE',
                 'Description' : 'DESCRIPTION',
@@ -144,9 +148,13 @@ class CremerieClass():
                 else :  
                     main_df[str(test_df.loc[[1]]).replace('0','').replace('\n','').replace(str(1),'').strip()] = test_df.loc[[0]]
             fp.close()
+            
             invoice_date = CremerieClass.getInvoiceDate(file_path)
             main_df['Invoice Date'] = invoice_date
-            main_df = main_df.loc[:,['Total HT','Total TVA','Total TTC','Invoice Date']]
+            invoice_number = CremerieClass.getInvoiceNumber(file_path)
+            main_df['UNIQUE_IDENTIFICATION_NUMBER'] = invoice_number
+            
+            main_df = main_df.loc[:,['Total HT','Total TVA','Total TTC','Invoice Date','UNIQUE_IDENTIFICATION_NUMBER']]
             main_df = main_df.rename(columns={
                 'Total TTC' : 'TOTAL_TTC',
                 'Total TVA' : 'TOTAL_TVA',
@@ -197,8 +205,48 @@ class CremerieClass():
         # print(invoice_date)
         fp.close()
         return invoice_date
-        
-if __name__ == '__main__':
     
-    CremerieClass.getDescriptionDetails('G:/.shortcut-targets-by-id/10c_wbYjXg65CblXAdT6kdB7EyX88MQSk/0PI_PROJECTS/Ivan - MediaProd/Backend/ProcessedInvoices/Cremerie/Completed/Facture client 291210.pdf')
-    CremerieClass.getTotalDetails('G:/.shortcut-targets-by-id/10c_wbYjXg65CblXAdT6kdB7EyX88MQSk/0PI_PROJECTS/Ivan - MediaProd/Backend/ProcessedInvoices/Cremerie/Completed/Facture client 291210.pdf')
+    def getInvoiceNumber(file_path) :
+        fp = open(file_path, 'rb')
+        rsrcmgr = PDFResourceManager()
+        laparams = LAParams(word_margin=0.1)
+        device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+        interpreter = PDFPageInterpreter(rsrcmgr, device)
+        pages = PDFPage.get_pages(fp)
+        final_df = pd.DataFrame()
+        X = 0
+        Y = 0
+        for page in pages:
+            interpreter.process_page(page)
+            layout = device.get_result()
+            for lobj in layout:
+                if isinstance(lobj, LTTextBox):
+                    df = pd.DataFrame(columns=['Y0','Y1','X0','X1','DETAIL'])
+                    text = lobj.get_text()     
+                    coordinate = str(lobj.bbox)[1:-1].split(",")
+                    df['Y0'] = [coordinate[0]]
+                    df['Y1'] = [coordinate[1]]
+                    df['X0'] = [coordinate[2]]
+                    df['X1'] = [coordinate[3]]
+                    df['DETAIL'] = text
+                    if 'Date' in text:
+                        X = float(coordinate[1])
+                    if 'Description' in text:
+                        Y = float(coordinate[1])
+                        Z = float(coordinate[3])
+                    final_df = pd.concat([final_df,df],axis=0,ignore_index=True)
+        
+        
+        final_df = final_df[final_df['Y1'].astype(float)<=float(X)]
+        final_df = final_df[final_df['Y1'].astype(float)>=float(Y)]
+        final_df = final_df.replace(r'\n','', regex=True)
+        final_df = final_df.replace(r'N°Document','', regex=True)
+        
+        final_df = final_df[final_df.DETAIL.str.match('[0-9]{3,}')]
+        final_df = final_df['DETAIL']
+        invoice_number  = final_df.values[0]
+        fp.close()
+        return invoice_number
+    
+if __name__ == '__main__':
+    pass

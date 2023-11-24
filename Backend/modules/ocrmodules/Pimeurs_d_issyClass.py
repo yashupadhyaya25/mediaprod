@@ -87,10 +87,13 @@ class Pimeurs_d_issyClass():
                     file_df[['Montant','Taxes']]= file_df[4].str.split('€',expand=True)
                     file_df.drop(columns=4,inplace=True)
                     invoice_date = Pimeurs_d_issyClass.getInvoiceDate(page)
+                    invoice_number = Pimeurs_d_issyClass.getInvoiceNumber(page)
                     file_df['Invoice Date'] = invoice_date
+                    file_df['UNIQUE_IDENTIFICATION_NUMBER'] = invoice_number
                     main_df = pd.concat([main_df,file_df],axis=0)
                 
             fp.close()
+            # print(main_df)
             main_df.rename(columns={0:'Libellé',1:'Conditionnement',2:'Quantité',3:'Prix unitaire',4:'Montant'},inplace=True)
             main_df['Montant'] = main_df['Montant'].astype(str)
             main_df['CODE'] = ''
@@ -108,7 +111,6 @@ class Pimeurs_d_issyClass():
             fp.close()
             return main_df
 
-    
     def getTotalDetails(file_path):
         fp = open(file_path, 'rb')
         rsrcmgr = PDFResourceManager()
@@ -116,19 +118,20 @@ class Pimeurs_d_issyClass():
         device = PDFPageAggregator(rsrcmgr, laparams=laparams)
         interpreter = PDFPageInterpreter(rsrcmgr, device)
         pages = PDFPage.get_pages(fp)
-        final_df = pd.DataFrame()
+        # final_df = pd.DataFrame()
         X = 0
         Y = 0
         total_df = pd.DataFrame()
         try :
             for page in pages:
+                final_df = pd.DataFrame()
                 interpreter.process_page(page)
                 layout = device.get_result()
                 for lobj in layout:
                     if isinstance(lobj, LTTextBox):
                         df = pd.DataFrame(columns=['Y0','Y1','X0','X1','DETAIL'])
                         text = lobj.get_text()
-                        if 'Notes' not in str(text):
+                        if 'Numéro' not in str(text):
                             coordinate = str(lobj.bbox)[1:-1].split(",")
                             df['Y0'] = [coordinate[0]]
                             df['Y1'] = [coordinate[1]]
@@ -140,24 +143,31 @@ class Pimeurs_d_issyClass():
                             if 'Total TTC' in text:
                                 Y = coordinate[1]
                             final_df = pd.concat([final_df,df],axis=0,ignore_index=True)
+                
                 try :
                     final_df = final_df[final_df['Y1'].astype(float)<=float(X)]
-                    final_df = final_df[final_df['Y1'].astype(float)>=float(Y)]    
-
-                    final_temp_df = final_df[final_df['Y0'].astype(float)>=float(X)+150]     
+                    final_df = final_df[final_df['Y1'].astype(float)>=float(Y)] 
+                    final_temp_df = final_df[final_df['Y0'].astype(float)>=(float(X)+150)]     
+                    
                     if len(final_temp_df) == 0 :
-                        final_temp_df = final_df[final_df['Y0'].astype(float)>=float(X)+100]     
+                        final_temp_df = final_df[final_df['Y0'].astype(float)>=float(X)+100]    
                     
                     final_temp_df = pd.DataFrame(final_temp_df['DETAIL'])
+                    invoice_number = Pimeurs_d_issyClass.getInvoiceNumber(page)   
+                    
                     final_temp_df[['Total HT','Total TVA','Total TTC','REXXXX']] = final_temp_df['DETAIL'].str.split('€',expand=True)
                     final_temp_df.drop(columns=['DETAIL','REXXXX'],inplace=True)
                     final_temp_df.dropna(inplace=True)
                     invoice_date = Pimeurs_d_issyClass.getInvoiceDate(page)
+                    invoice_number = Pimeurs_d_issyClass.getInvoiceNumber(page)
                     final_temp_df = final_temp_df.astype(str)
                     final_temp_df['Invoice Date'] = invoice_date
+                    final_temp_df['UNIQUE_IDENTIFICATION_NUMBER'] = invoice_number
                     total_df = pd.concat([total_df,final_temp_df],axis=0)
                     total_df = total_df.mask(total_df.eq('None')).dropna()
-                except :
+
+                except Exception as e:
+                    # print(e)
                     continue
             fp.close()
             total_df = total_df.rename(columns={
@@ -204,10 +214,41 @@ class Pimeurs_d_issyClass():
         final_df = final_df['DETAIL']
         invoice_date = (str(final_df.values[0]).split('\n')[1].split('-')[1])[0:4] + '-' + (str(final_df.values[0]).split('\n')[1].split('-')[1])[4:6] + '-' + (str(final_df.values[0]).split('\n')[1].split('-')[1])[6:]
         return invoice_date
+    
+    def getInvoiceNumber(page) :
+        rsrcmgr = PDFResourceManager()
+        laparams = LAParams(word_margin=0.1)
+        device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+        interpreter = PDFPageInterpreter(rsrcmgr, device)
+        final_df = pd.DataFrame()
+        X = 0
+        Y = 0
+        interpreter.process_page(page)
+        layout = device.get_result()
+        for lobj in layout:
+            if isinstance(lobj, LTTextBox):
+                df = pd.DataFrame(columns=['Y0','Y1','X0','X1','DETAIL'])
+                text = lobj.get_text()     
+                coordinate = str(lobj.bbox)[1:-1].split(",")
+                df['Y0'] = [coordinate[0]]
+                df['Y1'] = [coordinate[1]]
+                df['X0'] = [coordinate[2]]
+                df['X1'] = [coordinate[3]]
+                df['DETAIL'] = text
+                if 'Facture' in text:
+                    X = float(coordinate[1])
+                if 'Facture' in text:
+                    Y = float(coordinate[1])
+                    Z = float(coordinate[0])
+                final_df = pd.concat([final_df,df],axis=0,ignore_index=True)
+                
+        final_df = final_df[final_df['Y1'].astype(float)<=float(X)]
+        final_df = final_df[final_df['Y1'].astype(float)>=float(Y)]
+        final_df = final_df['DETAIL']
+
+        invoice_number = str(final_df.values[0]).strip().split('\n')[1].split('-')[-1]
+        return invoice_number
+
         
 if __name__ == '__main__':
-    # Pimeurs_d_issyClass.getDescriptionDetails(r'C:/Users/Yash/Downloads/RL-20230601-02235_Partie1.pdf')
-    # Pimeurs_d_issyClass.getDescriptionDetails(r'C:/Users/Yash/Downloads/RL-20231101-04523.pdf')
-    Pimeurs_d_issyClass.getTotalDetails(r'C:/Users/Yash/Downloads/RL-20231101-04523.pdf')
-    # Pimeurs_d_issyClass.getTotalDetails(r'G:\.shortcut-targets-by-id\10c_wbYjXg65CblXAdT6kdB7EyX88MQSk\0PI_PROJECTS\Ivan - MediaProd\Backend\ML\ML - InvoicesPDF\Training_PDFs\3_Pimeurs d_issy/RL-20230601-02235_Partie1.pdf')
-    # Pimeurs_d_issyClass.getInvoiceDate(r'G:\.shortcut-targets-by-id\10c_wbYjXg65CblXAdT6kdB7EyX88MQSk\0PI_PROJECTS\Ivan - MediaProd\ML\ML - InvoicesPDF\Training_PDFs\3_Pimeurs d_issy/RL-20230601-02235_Partie1.pdf')
+   pass

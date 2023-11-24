@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import axios from 'axios'
+import config from './config,';
 // const ReactTable = window.ReactTable.default
 
 function Invoice() {
@@ -10,6 +11,11 @@ function Invoice() {
     const [description_detail_header,setDescription_detail_header] = useState([])
     const [other_detail_header,setOther_detail_header] = useState([])
     const [status_message,setMessage] = useState()
+
+    var host = config.host;
+    var port = config.port;
+    var api_url = 'http://' + host + ':' + port
+    // console.log(api_url)
 
     function handleChange(event) {
         setDescriptiondata([])
@@ -22,8 +28,7 @@ function Invoice() {
 
     function handleSubmit(event) {
         event.preventDefault()
-        // const url = 'localhost:5000/v1/ocr';
-        const url = 'http://185.207.251.45:7005/v1/ocr';
+        const url = api_url+'/v1/ocr';
         const formData = new FormData();
         formData.append('file', file);
         formData.append('fileName', file.name);
