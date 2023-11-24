@@ -44,3 +44,4 @@ Backend/modules/ocrmodules/__pycache__/ReynaudClass.cpython-310.pyc
 Frontend/src/components/config,.js
 Backend/modules/classify_document/__pycache__/FindDocumentTypeClass.cpython-310.pyc
 *.pyc
+Frontend/src/components/config.js
