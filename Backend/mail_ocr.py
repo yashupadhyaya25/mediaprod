@@ -80,8 +80,8 @@ if file_list != [] :
                         
                         #### Check Whether The Invoice Is Already Present In DB Or Not ####
                         for invoice_number in list(set(description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].values)) :
-                            check_existing_in_description = db_connection.execute(text("Select * from INVOICE_DESCRIPTION where INVOICE_TYPE = '"+doctype+"' and UNIQUE_IDENTIFICATION_NUMBER = '"+invoice_number+"'"))
-                            check_existing_in_total = db_connection.execute(text("Select * from INVOICE_TOTAL where INVOICE_TYPE = '"+doctype+"' and UNIQUE_IDENTIFICATION_NUMBER = '"+invoice_number+"'"))
+                            check_existing_in_description = db_connection.connect().execute(text("Select * from INVOICE_DESCRIPTION where INVOICE_TYPE = '"+doctype+"' and UNIQUE_IDENTIFICATION_NUMBER = '"+invoice_number+"'"))
+                            check_existing_in_total = db_connection.connect().execute(text("Select * from INVOICE_TOTAL where INVOICE_TYPE = '"+doctype+"' and UNIQUE_IDENTIFICATION_NUMBER = '"+invoice_number+"'"))
                             
                             description_db_flag =  len(check_existing_in_description.fetchall())
                             total_db_flag = len(check_existing_in_total.fetchall())
