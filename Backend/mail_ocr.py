@@ -7,7 +7,7 @@ from configparser import ConfigParser
 from json import loads
 import pandas as pd
 from sqlalchemy import create_engine, text
-import datetime as dt
+from datetime import datetime as dt
 
 
 #### Environment ####
@@ -34,7 +34,7 @@ if file_list != [] :
                     #### DB CONNECTION ####
                     ocr_obj = OCR(file)
                     ocr_data = ocr_obj.ocr()
-                    # print(ocr_data)
+                    
                     if ocr_data[0].size > 0 and ocr_data[1].size > 0 :
                         description_detail_header = ocr_data[0].columns.tolist()
                         other_detail_header = ocr_data[1].columns.tolist()
@@ -53,7 +53,7 @@ if file_list != [] :
                         other_detail_df['PDF_NAME'] = file
                         other_detail_df['INVOICE_TYPE'] = doctype
                         other_detail_df = other_detail_df.loc[:,['TOTAL_TVA','TOTAL_HT','TOTAL_TTC','INVOICE_DATE','PDF_NAME','INVOICE_TYPE','UNIQUE_IDENTIFICATION_NUMBER']]
-                        
+
                         #### REMOVE WITHE SPACE ####
                         description_detail_df['CODE'] = description_detail_df['CODE'].str.strip()
                         description_detail_df['DESCRIPTION'] = description_detail_df['DESCRIPTION'].str.strip()
@@ -74,6 +74,7 @@ if file_list != [] :
                         other_detail_df['PDF_NAME'] = other_detail_df['PDF_NAME'].astype(str).str.strip()
                         other_detail_df['INVOICE_TYPE'] = other_detail_df['INVOICE_TYPE'].astype(str).str.strip()
                         other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] = other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].astype(str).str.strip()
+                        other_detail_df['INVOICE_FROM'] = 'MAIL'
                         other_detail_df['CREATED_ON'] =  dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')
                         #### REMOVE WITHE SPACE ####
                         
