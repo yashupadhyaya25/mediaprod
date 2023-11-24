@@ -59,7 +59,7 @@ def read_mail():
         for msg in messages:
             message = service.users().messages().get(userId='me', id=msg['id']).execute()
             datetime = int(message['internalDate'])//1000
-            if dt.fromtimestamp(datetime).strftime('%Y-%m-%d') >= ((dt.now() + td(days=0)).strftime('%Y-%m-%d')) :
+            if dt.fromtimestamp(datetime).strftime('%Y-%m-%d') >= ((dt.now() + td(days=-3)).strftime('%Y-%m-%d')) :
                 try:
                     # print(msg['id'])
                     for parts in message['payload']['parts'] :
