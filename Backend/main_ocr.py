@@ -35,7 +35,6 @@ class OCR():
         self.file_name = file_name
     
     def ocr(self):
-        if self.file_name not in os.listdir(invoice_folder_path+'completed') :
             #### Extract Raw Text from PDFs that user uploads in web ####
             text = ExtractPdfText.pdf_to_text(self.file_name)
             # print(text)
@@ -60,9 +59,6 @@ class OCR():
             #### Calling OCR Modules as per DOC TYPE ####
 
             return get_description_details,get_other_info,doc_type
-        
-        else :
-            return jsonify({'data':'','message':'Invoice OCR already done'})
      
 # if __name__ == '__main__':
 #     OCR.text
