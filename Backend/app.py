@@ -74,6 +74,7 @@ def ocr():
                 description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] = description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].str.strip() 
                 description_detail_df['INVOICE_FROM'] = 'WEB'
                 description_detail_df['CREATED_ON'] = dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')
+                description_detail_df['SYSTEM_NAME'] = file_name
                 
                 other_detail_df['TOTAL_TTC'] = other_detail_df['TOTAL_TTC'].astype(str).str.strip()
                 other_detail_df['TOTAL_TVA'] = other_detail_df['TOTAL_TVA'].astype(str).str.strip()
@@ -84,6 +85,7 @@ def ocr():
                 other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] = other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].astype(str).str.strip()
                 other_detail_df['INVOICE_FROM'] = 'WEB'
                 other_detail_df['CREATED_ON'] =  dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')
+                other_detail_df['SYSTEM_NAME'] = file_name
                 #### REMOVE WITHE SPACE ####
               
                 #### Check Whether The Invoice Is Already Present In DB Or Not ####

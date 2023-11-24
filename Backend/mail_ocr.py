@@ -46,11 +46,11 @@ if file_list != [] :
                         description_detail = loads(pd.DataFrame(description_detail_df.values).to_json(orient="records"))
                         other_detail = loads(pd.DataFrame(ocr_data[1].values).to_json(orient="records"))
                         
-                        description_detail_df['PDF_NAME'] = file
+                        description_detail_df['PDF_NAME'] = file.rsplit('_',6)[0]+'.pdf'
                         description_detail_df['INVOICE_TYPE'] = doctype
                         description_detail_df = description_detail_df.loc[:,['CODE','DESCRIPTION','QUANTITY','PER_UNIT_PRICE','TOTAL_AMOUNT','INVOICE_DATE','PDF_NAME','INVOICE_TYPE','UNIQUE_IDENTIFICATION_NUMBER']]
                         
-                        other_detail_df['PDF_NAME'] = file
+                        other_detail_df['PDF_NAME'] = file.rsplit('_',6)[0]+'.pdf'
                         other_detail_df['INVOICE_TYPE'] = doctype
                         other_detail_df = other_detail_df.loc[:,['TOTAL_TVA','TOTAL_HT','TOTAL_TTC','INVOICE_DATE','PDF_NAME','INVOICE_TYPE','UNIQUE_IDENTIFICATION_NUMBER']]
 
@@ -66,6 +66,7 @@ if file_list != [] :
                         description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] = description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].str.strip()
                         description_detail_df['INVOICE_FROM'] = 'MAIL'
                         description_detail_df['CREATED_ON'] = dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')
+                        description_detail_df['SYSTEM_NAME'] = file
                         
                         other_detail_df['TOTAL_TTC'] = other_detail_df['TOTAL_TTC'].astype(str).str.strip()
                         other_detail_df['TOTAL_TVA'] = other_detail_df['TOTAL_TVA'].astype(str).str.strip()
@@ -76,6 +77,7 @@ if file_list != [] :
                         other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] = other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].astype(str).str.strip()
                         other_detail_df['INVOICE_FROM'] = 'MAIL'
                         other_detail_df['CREATED_ON'] =  dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')
+                        other_detail_df['SYSTEM_NAME'] = file
                         #### REMOVE WITHE SPACE ####
                         
                         #### Check Whether The Invoice Is Already Present In DB Or Not ####
