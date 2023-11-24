@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import axios from 'axios'
-import config from 'config,';
+import config from 'config';
 // const ReactTable = window.ReactTable.default
 
 function Invoice() {
