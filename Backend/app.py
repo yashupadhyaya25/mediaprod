@@ -72,6 +72,8 @@ def ocr():
                 description_detail_df['PDF_NAME'] = description_detail_df['PDF_NAME'].str.strip()
                 description_detail_df['INVOICE_TYPE'] = description_detail_df['INVOICE_TYPE'].str.strip()
                 description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] = description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].str.strip() 
+                description_detail_df['INVOICE_FROM'] = 'WEB'
+                description_detail_df['CREATED_ON'] = dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')
                 
                 other_detail_df['TOTAL_TTC'] = other_detail_df['TOTAL_TTC'].astype(str).str.strip()
                 other_detail_df['TOTAL_TVA'] = other_detail_df['TOTAL_TVA'].astype(str).str.strip()
@@ -80,6 +82,8 @@ def ocr():
                 other_detail_df['PDF_NAME'] = other_detail_df['PDF_NAME'].astype(str).str.strip()
                 other_detail_df['INVOICE_TYPE'] = other_detail_df['INVOICE_TYPE'].astype(str).str.strip()
                 other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] = other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].astype(str).str.strip()
+                other_detail_df['INVOICE_FROM'] = 'WEB'
+                other_detail_df['CREATED_ON'] =  dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')
                 #### REMOVE WITHE SPACE ####
               
                 #### Check Whether The Invoice Is Already Present In DB Or Not ####
@@ -101,13 +105,13 @@ def ocr():
                 #### Check Whether The Invoice Is Already Present In DB Or Not ####        
                 
                 db_connection.dispose()
-                shutil.move(user_upload_pdf_path+file_name,invoice_folder_path+'completed/'+file_name.rsplit('_',6)[0]+'.pdf')
+                shutil.move(user_upload_pdf_path+file_name,invoice_folder_path+'completed/'+file_name)
                 return jsonify({'description_data':description_detail,'other_data':other_detail,'description_detail_header':description_detail_header,'other_detail_header':other_detail_header,'message':'Completed'})
             
         except Exception as e:
             print(e)
             db_connection.dispose()
-            shutil.move(user_upload_pdf_path+file_name,invoice_folder_path+'issue/'+file_name.rsplit('_',6)[0]+'.pdf')
+            shutil.move(user_upload_pdf_path+file_name,invoice_folder_path+'issue/'+file_name)
             return jsonify({'data':'','message':'Error occured please ensure you have select the correct pdf'})
 
 @app.route('/v1/test', methods = ['GET'])

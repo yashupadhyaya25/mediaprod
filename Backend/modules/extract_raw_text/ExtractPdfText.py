@@ -31,4 +31,5 @@ class ExtractPdfText() :
         text = text.replace("'","").replace('"',"").replace("None","").replace("#","").replace('\n',' ').strip()
         text = text.encode('ascii', errors='ignore')
         text = text.decode('ascii', errors='ignore')
+        os.remove(image_path+file.split('.pdf')[0]+'.png')
         return text

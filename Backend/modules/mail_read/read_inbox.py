@@ -59,7 +59,7 @@ def read_mail():
         for msg in messages:
             message = service.users().messages().get(userId='me', id=msg['id']).execute()
             datetime = int(message['internalDate'])//1000
-            if dt.fromtimestamp(datetime).strftime('%Y-%m-%d') >= ((dt.now() + td(days=-3)).strftime('%Y-%m-%d')) :
+            if dt.fromtimestamp(datetime).strftime('%Y-%m-%d') >= ((dt.now() + td(days=-1)).strftime('%Y-%m-%d')) :
                 try:
                     # print(msg['id'])
                     for parts in message['payload']['parts'] :
@@ -73,8 +73,8 @@ def read_mail():
                             file_data = base64.urlsafe_b64decode(data.encode('UTF-8'))
                             filename = parts['filename']
                             try :
-                                path = user_upload_pdf_path+filename
-                                file_list.append(filename)
+                                path = user_upload_pdf_path+filename.rsplit('.pdf',-1)[0]+'_'+dt.fromtimestamp(datetime).strftime('%Y_%m_%d_%H_%M_%S')+'.pdf'
+                                file_list.append(filename.rsplit('.pdf',-1)[0]+'_'+dt.fromtimestamp(datetime).strftime('%Y_%m_%d_%H_%M_%S')+'.pdf')
                                 if(parts['filename'].find(".pdf") != -1): 
                                     with open(path, 'xb') as f:
                                         f.write(file_data)
