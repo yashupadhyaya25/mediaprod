@@ -80,9 +80,6 @@ if file_list != [] :
                         other_detail_df['SYSTEM_NAME'] = file
                         #### REMOVE WITHE SPACE ####
                         
-                        print(description_detail_df.size)
-                        print(other_detail_df.size)
-                        
                         #### Check Whether The Invoice Is Already Present In DB Or Not ####
                         for invoice_number in list(set(description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].values)) :
                             check_existing_in_description = db_connection.connect().execute(text("Select * from INVOICE_DESCRIPTION where INVOICE_TYPE = '"+doctype+"' and UNIQUE_IDENTIFICATION_NUMBER = '"+invoice_number+"'"))
