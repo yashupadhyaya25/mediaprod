@@ -66,9 +66,9 @@ def ocr():
                 description_detail_df['CODE'] = description_detail_df['CODE'].str.strip()
                 description_detail_df['DESCRIPTION'] = description_detail_df['DESCRIPTION'].str.strip()
                 description_detail_df['QUANTITY'] = description_detail_df['QUANTITY'].str.strip()
-                description_detail_df['PER_UNIT_PRICE'] = description_detail_df['PER_UNIT_PRICE'].str.strip()
-                description_detail_df['TOTAL_AMOUNT'] = description_detail_df['TOTAL_AMOUNT'].str.strip()
-                description_detail_df['INVOICE_DATE'] = description_detail_df['INVOICE_DATE'].str.strip()
+                description_detail_df['PER_UNIT_PRICE'] = description_detail_df['PER_UNIT_PRICE'].str.replace('€','').str.strip().str.replace(' ',',')
+                description_detail_df['TOTAL_AMOUNT'] = description_detail_df['TOTAL_AMOUNT'].str.replace('€','').str.strip().str.replace(' ',',')
+                description_detail_df['INVOICE_DATE'] = pd.to_datetime(description_detail_df['INVOICE_DATE'].str.strip()).dt.strftime('%Y-%m-%d')
                 description_detail_df['PDF_NAME'] = description_detail_df['PDF_NAME'].str.strip()
                 description_detail_df['INVOICE_TYPE'] = description_detail_df['INVOICE_TYPE'].str.strip()
                 description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] = description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].str.strip() 
@@ -76,10 +76,10 @@ def ocr():
                 description_detail_df['CREATED_ON'] = dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')
                 description_detail_df['SYSTEM_NAME'] = file_name
                 
-                other_detail_df['TOTAL_TTC'] = other_detail_df['TOTAL_TTC'].astype(str).str.strip()
-                other_detail_df['TOTAL_TVA'] = other_detail_df['TOTAL_TVA'].astype(str).str.strip()
-                other_detail_df['TOTAL_HT'] = other_detail_df['TOTAL_HT'].astype(str).str.strip()
-                other_detail_df['INVOICE_DATE'] = other_detail_df['INVOICE_DATE'].astype(str).str.strip()
+                other_detail_df['TOTAL_TTC'] = other_detail_df['TOTAL_TTC'].astype(str).str.replace('€','').str.strip().str.replace(' ',',')
+                other_detail_df['TOTAL_TVA'] = other_detail_df['TOTAL_TVA'].astype(str).str.replace('€','').str.strip().str.replace(' ',',')
+                other_detail_df['TOTAL_HT'] = other_detail_df['TOTAL_HT'].astype(str).str.replace('€','').str.strip().str.replace(' ',',')
+                other_detail_df['INVOICE_DATE'] = pd.to_datetime(other_detail_df['INVOICE_DATE'].astype(str).str.strip()).dt.strftime('%Y-%m-%d')
                 other_detail_df['PDF_NAME'] = other_detail_df['PDF_NAME'].astype(str).str.strip()
                 other_detail_df['INVOICE_TYPE'] = other_detail_df['INVOICE_TYPE'].astype(str).str.strip()
                 other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] = other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].astype(str).str.strip()
@@ -87,7 +87,7 @@ def ocr():
                 other_detail_df['CREATED_ON'] =  dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')
                 other_detail_df['SYSTEM_NAME'] = file_name
                 #### REMOVE WITHE SPACE ####
-              
+
                 #### Check Whether The Invoice Is Already Present In DB Or Not ####
                 for invoice_number in list(set(description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].values)) :
                     check_existing_in_description = db_connection.connect().execute(text("Select * from INVOICE_DESCRIPTION where INVOICE_TYPE = '"+doctype+"' and UNIQUE_IDENTIFICATION_NUMBER = '"+invoice_number+"'"))

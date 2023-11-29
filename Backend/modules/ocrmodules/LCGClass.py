@@ -14,12 +14,13 @@ class LCGClass():
         device = PDFPageAggregator(rsrcmgr, laparams=laparams)
         interpreter = PDFPageInterpreter(rsrcmgr, device)
         pages = PDFPage.get_pages(fp)
-
         final_df = pd.DataFrame()
-        X = 0
-        Y = 0
+        page_no = 1
         try :
             for page in pages:
+                X = 0
+                Y = 0
+                page_df = pd.DataFrame()
                 interpreter.process_page(page)
                 layout = device.get_result()
                 for lobj in layout:
@@ -36,53 +37,64 @@ class LCGClass():
                             X = float(coordinate[1])
                         if 'Sous-total (HT)' in text:
                             Y = float(coordinate[1])
-                        final_df = pd.concat([final_df,df],axis=0,ignore_index=True)
-            # print(final_df.to_string())
-            co_ordinated_dic = {}
-            missing_coordianted_dic = {}
-            final_df = final_df[final_df['Y1'].astype(float)<X]   
-            tem_df = final_df[final_df['Y1'].astype(float)>Y]
-            if tem_df.size == 0 :
-                final_df = final_df[final_df['Y1'].astype(float)<Y]
-                final_df = final_df[final_df['Y0'].astype(float)>=35]
-                final_df = final_df[final_df['Y1'].astype(float)>=20]
-            else :
-                final_df = final_df[final_df['Y1'].astype(float)>Y]
-            
-            final_df = final_df.sort_values(by=['X1','Y0'],ignore_index=False)
+                        page_df = pd.concat([page_df,df],axis=0,ignore_index=True)
 
-            final_df['KEY'] = final_df['Y1'] + '_' + final_df['X1']
-            key_df = final_df['KEY'].unique()
-            for key in key_df:
-                if final_df['KEY'].value_counts()[key] > 1 :
-                    co_ordinated_dic[key] = final_df['KEY'].value_counts()[key]
-                    
-            description_df = pd.DataFrame()   
-            
-            for filter_key in co_ordinated_dic.keys():
-                temp_df = pd.DataFrame()
-                temp_df = final_df.loc[(final_df.KEY == filter_key)]
-                description_df = pd.concat([description_df,temp_df],axis=0)
-            
-            no_of_rows = int(len(description_df))
-            no_of_table_rows = int(len(description_df)//6)
-            
-            description_df = description_df.sort_values(by=['X1','Y0'],ignore_index=False)
-            final_df_details = description_df['DETAIL']
-            file_df = pd.DataFrame()
-            for item in np.array_split(final_df_details, (no_of_table_rows)):
-                temp_df = pd.DataFrame(item)
-                temp_df.reset_index(drop=True,inplace=True)
-                temp_df = temp_df.transpose()
-                file_df = pd.concat([file_df,temp_df],axis=0)
+                co_ordinated_dic = {}
+                page_df = page_df[page_df['Y1'].astype(float)<X]   
+                tem_df = page_df[page_df['Y1'].astype(float)>Y]
+                if tem_df.size == 0 :
+                    page_df = page_df[page_df['Y1'].astype(float)<Y]
+                    page_df = page_df[page_df['Y0'].astype(float)>=35]
+                    page_df = page_df[page_df['Y1'].astype(float)>=20]
+                else :
+                    page_df = page_df[page_df['Y1'].astype(float)>Y]
                 
-            invoice_date = LCGClass.getInvoiceDate(file_path)
-            file_df['Invoice Date'] = invoice_date
-            invoice_number = LCGClass.getInvoiceNumber(file_path)
-            file_df['UNIQUE_IDENTIFICATION_NUMBER'] = invoice_number
+                # print('----> '+str(page_no))  
+                if page_df.size > 0 :
+                    page_df = page_df.sort_values(by=['X1','Y0'],ignore_index=False)
+                    page_df['KEY'] = page_df['Y1'] + '_' + page_df['X1']
+                    key_df = page_df['KEY'].unique()
+                    for key in key_df:
+                        if page_df['KEY'].value_counts()[key] > 5 :
+                            co_ordinated_dic[key] = page_df['KEY'].value_counts()[key]      
+                    description_df = pd.DataFrame()   
+                    for filter_key in co_ordinated_dic.keys():
+                        temp_df = pd.DataFrame()
+                        temp_df = page_df.loc[(page_df.KEY == filter_key)]
+                        description_df = pd.concat([description_df,temp_df],axis=0)
+
+                no_of_table_rows = int(len(description_df)//6)
+                description_df = description_df.sort_values(by=['X1','Y0'],ignore_index=False)
+                final_df_details = description_df['DETAIL']             
+                file_df = pd.DataFrame()
+                                
+                for item in np.array_split(final_df_details, (no_of_table_rows)):
+                    temp_df = pd.DataFrame(item)
+                    temp_df.reset_index(drop=True,inplace=True)
+                    temp_df = temp_df.transpose()
+                    file_df = pd.concat([file_df,temp_df],axis=0)
+                
+                invoice_date = LCGClass.getInvoiceDate(page)
+                if str(invoice_date) != 'nan':
+                    previous_page_date = invoice_date
+                    file_df['Invoice Date'] = invoice_date
+                else :
+                    file_df['Invoice Date'] = previous_page_date
+                
+                invoice_number = LCGClass.getInvoiceNumber(page)
+                if str(invoice_number) != 'nan': 
+                    previous_page_invoice_number = invoice_number
+                    file_df['UNIQUE_IDENTIFICATION_NUMBER'] = invoice_number  
+                else :
+                    file_df['UNIQUE_IDENTIFICATION_NUMBER'] = previous_page_invoice_number  
+                
+                page_no += 1
+                final_df = pd.concat([final_df,file_df],axis=0)
             
-            file_df.rename(columns={0:'SKU',1:'Produits',2:'Prix',3:'Qté',4:'Taxe',5:'Sous-Total'},inplace=True)
-            file_df = file_df.rename(columns={
+            final_df.drop_duplicates(inplace=True)
+            
+            final_df.rename(columns={0:'SKU',1:'Produits',2:'Prix',3:'Qté',4:'Taxe',5:'Sous-Total'},inplace=True)
+            final_df = final_df.rename(columns={
                 'SKU' : 'CODE',
                 'Produits' : 'DESCRIPTION',
                 'Qté' : 'QUANTITY',
@@ -91,8 +103,8 @@ class LCGClass():
                 'Invoice Date' : 'INVOICE_DATE',
             })
             fp.close()
-            # print(file_df)
-            return file_df
+            # print(final_df)
+            return final_df
         except Exception as e:
             # print(e)
             fp.close()
@@ -106,10 +118,12 @@ class LCGClass():
         interpreter = PDFPageInterpreter(rsrcmgr, device)
         pages = PDFPage.get_pages(fp)
         final_df = pd.DataFrame()
-        X = 0
-        Y = 0
+        page_no = 1
         try :
             for page in pages:
+                X = 0
+                Y = 0
+                page_df = pd.DataFrame()
                 interpreter.process_page(page)
                 layout = device.get_result()
                 for lobj in layout:
@@ -127,62 +141,68 @@ class LCGClass():
                         if 'Total (TTC)' in text:
                             Y = float(coordinate[1])
                             Z = float(coordinate[0])
-                        final_df = pd.concat([final_df,df],axis=0,ignore_index=True)
-            
-            
-            final_df = final_df[final_df['Y1'].astype(float)<=float(X)]
-            final_df = final_df[final_df['Y1'].astype(float)>=float(Y)-10]
-            final_df = final_df[final_df['Y0'].astype(float)>=60]
-            final_df = final_df.sort_values(by=['X1','X0'],ignore_index=True)
-
-            
-        
-            final_df = pd.DataFrame(final_df['DETAIL'])
-
-            main_df = pd.DataFrame()
-            for item in np.array_split(final_df, final_df.size//2):
-                test_df = pd.DataFrame()
-                temp_df = pd.DataFrame(item)
+                        page_df = pd.concat([page_df,df],axis=0,ignore_index=True)
+           
+                page_df = page_df[page_df['Y1'].astype(float)<=float(X)]
+                page_df = page_df[page_df['Y1'].astype(float)>=float(Y)-10]
+                page_df = page_df[page_df['Y0'].astype(float)>=60]
+                page_df['X1'] = page_df['X1'].astype(float)
+                page_df['X0'] = page_df['X0'].astype(float)
+                page_df = page_df.sort_values(by=['X1','X0'],ignore_index=True)
+                page_df = pd.DataFrame(page_df['DETAIL'])
+                main_df = pd.DataFrame()
+                # print('----> '+str(page_no))
+                if page_df.size > 0 :
+                    for item in np.array_split(page_df, page_df.size//2):
+                        temp_df = pd.DataFrame(item)
+                        temp_df.reset_index(drop=True,inplace=True)
+                        temp_df = temp_df.replace(r'\n','', regex=True) 
+                        temp_df = temp_df.replace(r':','', regex=True)
+                        temp_df.columns = temp_df.iloc[0]
+                        temp_df = temp_df[1:]
+                        main_df = pd.concat([temp_df,main_df],axis=1)
                 
-                temp_df.reset_index(drop=True,inplace=True)
-                temp_df = temp_df.replace(r'\n','', regex=True) 
-                temp_df = temp_df.replace(r':','', regex=True)
-                temp_df.columns = temp_df.iloc[0]
-                temp_df = temp_df[1:]
-                main_df = pd.concat([temp_df,main_df],axis=1)
+                main_df['PDF_PAGE_NO'] = page_no        
+                invoice_date = LCGClass.getInvoiceDate(page)
+                if str(invoice_date) != 'nan':
+                    previous_page_date = invoice_date
+                    main_df['Invoice Date'] = invoice_date
+                else :
+                    main_df['Invoice Date'] = previous_page_date
+                
+                invoice_number = LCGClass.getInvoiceNumber(page)
+                if str(invoice_number) != 'nan': 
+                    previous_page_invoice_number = invoice_number
+                    main_df['UNIQUE_IDENTIFICATION_NUMBER'] = invoice_number  
+                else :
+                    main_df['UNIQUE_IDENTIFICATION_NUMBER'] = previous_page_invoice_number  
+
+                final_df = pd.concat([final_df,main_df],axis=0,ignore_index=True)              
+                page_no += 1 
+                                
             fp.close()
-            # print(main_df)
-            
-            invoice_date = LCGClass.getInvoiceDate(file_path)
-            main_df['Invoice Date'] = invoice_date
-            invoice_number = LCGClass.getInvoiceNumber(file_path)
-            main_df['UNIQUE_IDENTIFICATION_NUMBER'] = invoice_number
-            
-            main_df = main_df.loc[:,['Sous-total (HT)','Total (HT)','EU-Norm-FR-5.5 (5.5000%)','Taxe','Sous-total (TTC)','Total (TTC)','Invoice Date','UNIQUE_IDENTIFICATION_NUMBER']]
-            main_df = main_df.rename(columns={
+            final_df = final_df.loc[:,['Sous-total (HT)','Total (HT)','EU-Norm-FR-5.5 (5.5000%)','Taxe','Sous-total (TTC)','Total (TTC)','Invoice Date','UNIQUE_IDENTIFICATION_NUMBER']]
+            final_df = final_df.rename(columns={
                 'Total (TTC)' : 'TOTAL_TTC',
                 'Total (HT)' : 'TOTAL_HT',
                 'Invoice Date' : 'INVOICE_DATE',
                 'Taxe' : 'TOTAL_TVA'
             })
-            # print(main_df)
-            return main_df
+            return final_df
         except :
             fp.close()
+            final_df = pd.DataFrame()
             return final_df
     
-    def getInvoiceDate(file_path):
-        fp = open(file_path, 'rb')
-        rsrcmgr = PDFResourceManager()
-        laparams = LAParams(word_margin=0.1)
-        device = PDFPageAggregator(rsrcmgr, laparams=laparams)
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
-        pages = PDFPage.get_pages(fp)
-        final_df = pd.DataFrame()
-        X = 0
-        Y = 0
-
-        for page in pages:
+    def getInvoiceDate(page):
+        try :
+            rsrcmgr = PDFResourceManager()
+            laparams = LAParams(word_margin=0.1)
+            device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+            interpreter = PDFPageInterpreter(rsrcmgr, device)
+            final_df = pd.DataFrame()
+            X = 0
+            Y = 0
             interpreter.process_page(page)
             layout = device.get_result()
             for lobj in layout:
@@ -201,30 +221,28 @@ class LCGClass():
                         Y = float(coordinate[1])
                         Z = float(coordinate[0])
                     final_df = pd.concat([final_df,df],axis=0,ignore_index=True)
+            final_df = final_df[final_df['Y1'].astype(float)<=float(X)]
+            
+            final_df = final_df[final_df['Y1'].astype(float)>=float(Y)-10]
+            final_df = final_df.sort_values(by=['X1'],ignore_index=True)
+            final_df = pd.DataFrame(final_df['DETAIL'])
+            for data in final_df.itertuples() :
+                    date_of_invoice = data[1].split(':')[1].replace('\n','').strip()
+            return date_of_invoice
         
-        
-        final_df = final_df[final_df['Y1'].astype(float)<=float(X)]
-        final_df = final_df[final_df['Y1'].astype(float)>=float(Y)-10]
-        final_df = final_df.sort_values(by=['X1'],ignore_index=True)
-        final_df = pd.DataFrame(final_df['DETAIL'])
-        for data in final_df.itertuples() :
-                date_of_invoice = data[1].split(':')[1].replace('\n','').strip()
-        
-        fp.close()
-        return date_of_invoice
-    
+        except :
+            return np.NaN
+
     def getInvoiceNumber(file_path) :
-        fp = open(file_path, 'rb')
-        rsrcmgr = PDFResourceManager()
-        laparams = LAParams(word_margin=0.1)
-        device = PDFPageAggregator(rsrcmgr, laparams=laparams)
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
-        pages = PDFPage.get_pages(fp)
-        final_df = pd.DataFrame()
-        X = 0
-        Y = 0
-        for page in pages:
-            interpreter.process_page(page)
+        try :
+            rsrcmgr = PDFResourceManager()
+            laparams = LAParams(word_margin=0.1)
+            device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+            interpreter = PDFPageInterpreter(rsrcmgr, device)
+            final_df = pd.DataFrame()
+            X = 0
+            Y = 0
+            interpreter.process_page(file_path)
             layout = device.get_result()
             for lobj in layout:
                 if isinstance(lobj, LTTextBox):
@@ -242,19 +260,18 @@ class LCGClass():
                         Y = float(coordinate[1])
                         Z = float(coordinate[3])
                     final_df = pd.concat([final_df,df],axis=0,ignore_index=True)
-        
 
-        final_df = final_df[final_df['Y1'].astype(float)<=float(X)]
-        final_df = final_df[final_df['Y1'].astype(float)>=float(Y)]
-        
-        final_df = final_df.replace(r'\n','', regex=True)
-        final_df = final_df.replace(r'Facture','', regex=True)
-        final_df = final_df.replace(r'#','', regex=True)
-        final_df = final_df[final_df.DETAIL.str.match('[0-9]*')]
-        final_df = final_df['DETAIL']
-        invoice_number  = final_df.values[0]
-        fp.close()
-        return invoice_number
+            final_df = final_df[final_df['Y1'].astype(float)<=float(X)]
+            final_df = final_df[final_df['Y1'].astype(float)>=float(Y)]
+            final_df = final_df.replace(r'\n','', regex=True)
+            final_df = final_df.replace(r'Facture','', regex=True)
+            final_df = final_df.replace(r'#','', regex=True)
+            final_df = final_df[final_df.DETAIL.str.match('[0-9]*')]
+            final_df = final_df['DETAIL']
+            invoice_number  = final_df.values[0]
+            return invoice_number
+        except :
+            return np.NaN
     
 if __name__ == '__main__':
     pass
