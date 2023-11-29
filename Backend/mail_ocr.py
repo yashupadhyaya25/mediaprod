@@ -90,11 +90,11 @@ if file_list != [] :
                             
                             if description_db_flag == 0 :
                                 description_detail_to_db_df = description_detail_df[description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] == invoice_number]
-                                description_detail_to_db_df.to_sql(name = 'INVOICE_DESCRIPTION',con = db_connection,if_exists = 'append',index = False,dtype=None,method='multi')
+                                description_detail_to_db_df.to_sql(name = 'INVOICE_DESCRIPTION',con = db_connection,if_exists = 'append',index = False,dtype=None,chunksize = 100,method='multi')
                             
                             if total_db_flag == 0 :
                                 other_detail_to_db_df = other_detail_df[other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] == invoice_number]
-                                other_detail_to_db_df.to_sql(name = 'INVOICE_TOTAL',con = db_connection,if_exists = 'append',index = False,dtype=None,method='multi')
+                                other_detail_to_db_df.to_sql(name = 'INVOICE_TOTAL',con = db_connection,if_exists = 'append',index = False,dtype=None,chunksize = 100,method='multi')
                         
                         #### Check Whether The Invoice Is Already Present In DB Or Not ####
                         
