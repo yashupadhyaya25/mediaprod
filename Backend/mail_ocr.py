@@ -103,6 +103,7 @@ if file_list != [] :
                     else :
                         shutil.move(user_upload_pdf_path+file,invoice_folder_path+'issue/'+file)
                 except Exception as e :
+                    print(e)
                     shutil.move(user_upload_pdf_path+file,invoice_folder_path+'issue/'+file)
                     db_connection.dispose()
                     continue
