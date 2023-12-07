@@ -90,6 +90,15 @@ class Pimeurs_d_issyClass():
                     invoice_number = Pimeurs_d_issyClass.getInvoiceNumber(page)
                     file_df['Invoice Date'] = invoice_date
                     file_df['UNIQUE_IDENTIFICATION_NUMBER'] = invoice_number
+                    
+                    restaurant_name = Pimeurs_d_issyClass.getRestaurantName(page)
+                    if str(restaurant_name) != 'nan': 
+                        previous_restaurant_name = restaurant_name
+                        file_df['RESTAURANT_NAME'] = restaurant_name  
+                    else :
+                        file_df['RESTAURANT_NAME'] = previous_restaurant_name
+                    print(restaurant_name)
+                    
                     main_df = pd.concat([main_df,file_df],axis=0)
                 
             fp.close()
@@ -163,6 +172,15 @@ class Pimeurs_d_issyClass():
                     final_temp_df = final_temp_df.astype(str)
                     final_temp_df['Invoice Date'] = invoice_date
                     final_temp_df['UNIQUE_IDENTIFICATION_NUMBER'] = invoice_number
+                    
+                    restaurant_name = Pimeurs_d_issyClass.getRestaurantName(page)
+                    if str(restaurant_name) != 'nan': 
+                        previous_restaurant_name = restaurant_name
+                        final_temp_df['RESTAURANT_NAME'] = restaurant_name  
+                    else :
+                        final_temp_df['RESTAURANT_NAME'] = previous_restaurant_name
+                    print(restaurant_name)
+                    
                     total_df = pd.concat([total_df,final_temp_df],axis=0)
                     total_df = total_df.mask(total_df.eq('None')).dropna()
 
@@ -248,7 +266,56 @@ class Pimeurs_d_issyClass():
 
         invoice_number = str(final_df.values[0]).strip().split('\n')[1].split('-')[-1]
         return invoice_number
+    
+    def getRestaurantName(page) :
+        try :
+            rsrcmgr = PDFResourceManager()
+            laparams = LAParams(word_margin=0.1)
+            device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+            interpreter = PDFPageInterpreter(rsrcmgr, device)
+            final_df = pd.DataFrame()
+            X = 0
+            Y = 0
+            interpreter.process_page(page)
+            layout = device.get_result()
+            for lobj in layout:
+                if isinstance(lobj, LTTextBox):
+                    df = pd.DataFrame(columns=['Y0','Y1','X0','X1','DETAIL'])
+                    text = lobj.get_text()     
+                    coordinate = str(lobj.bbox)[1:-1].split(",")
+                    df['Y0'] = [coordinate[0]]
+                    df['Y1'] = [coordinate[1]]
+                    df['X0'] = [coordinate[2]]
+                    df['X1'] = [coordinate[3]]
+                    df['DETAIL'] = text
+                    if 'Adresse de livraison :' in text:
+                        X = float(coordinate[1])
+                        Z = float(coordinate[2])
+                    if 'Adresse de livraison :' in text:
+                        Y = float(coordinate[1])
+                    final_df = pd.concat([final_df,df],axis=0,ignore_index=True)
+            
+
+            final_df = final_df[final_df['Y1'].astype(float)<=float(X)]
+            final_df = final_df[final_df['Y1'].astype(float)>=float(Y)]
+            final_df['X1'] = final_df['X1'].astype(float)
+            final_df['X0'] = final_df['X0'].astype(float)
+            final_df = final_df.sort_values(by=['X1','X0'],ignore_index=True)
+            final_df = final_df['DETAIL'].head(1)
+            
+            restaurant_name = final_df.values[0].split('\n')
+            restaurant_name = [name.lower() for name in restaurant_name]
+            if '29 rue de trévise' in restaurant_name or '29 rue trévise' in restaurant_name :
+                return 'BON BOUQUET'
+            elif '7 rue keller' in restaurant_name :
+                return 'KAFKAF'
+            elif '96 bd de sébastopol' in restaurant_name or '96 boulevard de sebastopol' in restaurant_name :
+                return 'SANTA LYNA'
+            else :
+                return final_df.values[0].split('\n')[1].upper().strip()
+        except :
+            return np.NaN
 
         
 if __name__ == '__main__':
-   pass
+    pass

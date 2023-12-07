@@ -55,12 +55,12 @@ def ocr():
                 # print(description_detail)
                 description_detail_df['PDF_NAME'] = request.files['file'].filename
                 description_detail_df['INVOICE_TYPE'] = doctype
-                description_detail_df = description_detail_df.loc[:,['CODE','DESCRIPTION','QUANTITY','PER_UNIT_PRICE','TOTAL_AMOUNT','INVOICE_DATE','PDF_NAME','INVOICE_TYPE','UNIQUE_IDENTIFICATION_NUMBER']]
+                description_detail_df = description_detail_df.loc[:,['CODE','DESCRIPTION','QUANTITY','PER_UNIT_PRICE','TOTAL_AMOUNT','INVOICE_DATE','PDF_NAME','INVOICE_TYPE','UNIQUE_IDENTIFICATION_NUMBER','RESTAURANT_NAME']]
                 
                 other_detail_df['PDF_NAME'] = request.files['file'].filename
                 other_detail_df['INVOICE_TYPE'] = doctype
                 # print(other_detail_df)
-                other_detail_df = other_detail_df.loc[:,['TOTAL_TVA','TOTAL_HT','TOTAL_TTC','INVOICE_DATE','PDF_NAME','INVOICE_TYPE','UNIQUE_IDENTIFICATION_NUMBER']]
+                other_detail_df = other_detail_df.loc[:,['TOTAL_TVA','TOTAL_HT','TOTAL_TTC','INVOICE_DATE','PDF_NAME','INVOICE_TYPE','UNIQUE_IDENTIFICATION_NUMBER','RESTAURANT_NAME']]
                 
                 #### REMOVE WITHE SPACE ####
                 description_detail_df['CODE'] = description_detail_df['CODE'].str.strip()
@@ -75,6 +75,7 @@ def ocr():
                 description_detail_df['INVOICE_FROM'] = 'WEB'
                 description_detail_df['CREATED_ON'] = dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')
                 description_detail_df['SYSTEM_NAME'] = file_name
+                description_detail_df['RESTAURANT_NAME'] = description_detail_df['RESTAURANT_NAME'].str.strip()
                 
                 other_detail_df['TOTAL_TTC'] = other_detail_df['TOTAL_TTC'].astype(str).str.replace('€','').str.strip().str.replace(' ',',')
                 other_detail_df['TOTAL_TVA'] = other_detail_df['TOTAL_TVA'].astype(str).str.replace('€','').str.strip().str.replace(' ',',')
@@ -86,9 +87,10 @@ def ocr():
                 other_detail_df['INVOICE_FROM'] = 'WEB'
                 other_detail_df['CREATED_ON'] =  dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')
                 other_detail_df['SYSTEM_NAME'] = file_name
+                other_detail_df['RESTAURANT_NAME'] = other_detail_df['RESTAURANT_NAME'].str.strip()
                 #### REMOVE WITHE SPACE ####
-
-                #### Check Whether The Invoice Is Already Present In DB Or Not ####
+                
+                #### Check Whether The Invoice Is Already Present In DB Or Not ####     
                 for invoice_number in list(set(description_detail_df['UNIQUE_IDENTIFICATION_NUMBER'].values)) :
                     check_existing_in_description = db_connection.connect().execute(text("Select * from INVOICE_DESCRIPTION where INVOICE_TYPE = '"+doctype+"' and UNIQUE_IDENTIFICATION_NUMBER = '"+invoice_number+"'"))
                     check_existing_in_total = db_connection.connect().execute(text("Select * from INVOICE_TOTAL where INVOICE_TYPE = '"+doctype+"' and UNIQUE_IDENTIFICATION_NUMBER = '"+invoice_number+"'"))
@@ -102,8 +104,7 @@ def ocr():
                     
                     if total_db_flag == 0 :
                         other_detail_to_db_df = other_detail_df[other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] == invoice_number]
-                        other_detail_to_db_df.to_sql(name = 'INVOICE_TOTAL',con = db_connection,if_exists = 'append',index = False,dtype=None,method='multi',chunksize = 100)
-                        
+                        other_detail_to_db_df.to_sql(name = 'INVOICE_TOTAL',con = db_connection,if_exists = 'append',index = False,dtype=None,method='multi',chunksize = 100)       
                 #### Check Whether The Invoice Is Already Present In DB Or Not ####        
                 
                 db_connection.dispose()

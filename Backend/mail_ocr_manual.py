@@ -1,4 +1,4 @@
-from modules.mail_read.read_inbox import read_mail
+from modules.mail_read.read_inbox_manual import read_mail
 from main_ocr import OCR
 from modules.dbconnections.mysql import mysql
 
@@ -20,9 +20,9 @@ config_file_obj = configur.read('config.ini')
 invoice_folder_path = configur.get(enivronment,'invoice_folder_path')
 user_upload_pdf_path = configur.get(enivronment,'user_upload_pdf')
 
-#### Download Files From Last 1 Days ####
+#### Download Files ####
 file_list = read_mail()
-#### Download Files From Last 1 Days ####
+#### Download Files ####
 
 
 if file_list != [] :
