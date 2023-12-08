@@ -5,6 +5,7 @@ from pdfminer.pdfinterp import PDFPageInterpreter
 from pdfminer.converter import PDFPageAggregator
 import pandas as pd
 import numpy as np
+from datetime import datetime as dt
 
 class LCGClass():
     def getDescriptionDetails(file_path):
@@ -243,9 +244,11 @@ class LCGClass():
             final_df = pd.DataFrame(final_df['DETAIL'])
             for data in final_df.itertuples() :
                     date_of_invoice = data[1].split(':')[1].replace('\n','').strip()
+            
+            date_of_invoice = str(dt.strptime(date_of_invoice,'%d/%m/%Y').date())
             return date_of_invoice
         
-        except :
+        except Exception as e:
             return np.NaN
 
     def getInvoiceNumber(page) :
