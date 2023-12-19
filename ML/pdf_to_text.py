@@ -6,7 +6,12 @@ import pdf2image
 import shutil
 
 def pdf_to_text():
-    pytesseract.pytesseract.tesseract_cmd = r'Tesseract-OCR/tesseract.exe'
+    #### If you dont have tesseract install it from : 
+    # Download tesseract exe from https://github.com/UB-Mannheim/tesseract/wiki.
+    # Install this exe in Any folder of your choice
+    # Run pip install pytesseract
+    ####################################################################
+    pytesseract.pytesseract.tesseract_cmd = r'Tesseract-OCR/tesseract.exe' ## just give path till tesseract.exe that you have installed in above step
     pdf_file_path = r'ML/ML - InvoicesPDF/Training_PDFs/'
     trained_pdf_file_path = r'ML/ML - InvoicesPDF/Trained PDFs/'
     image_path = r'ML/Image/'
