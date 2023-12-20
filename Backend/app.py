@@ -106,14 +106,14 @@ def ocr():
                         other_detail_to_db_df = other_detail_df[other_detail_df['UNIQUE_IDENTIFICATION_NUMBER'] == invoice_number]
                         other_detail_to_db_df.to_sql(name = 'INVOICE_TOTAL',con = db_connection,if_exists = 'append',index = False,dtype=None,method='multi',chunksize = 100)       
                 #### Check Whether The Invoice Is Already Present In DB Or Not ####        
-                db_connection.connect().execute(text("INSERT INTO PDF_AUDIT VALUES ( '"+file_name+"','COMPLETED','"+"','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','WEB')"))
+                db_connection.connect().execute(text("INSERT INTO pdf_audit VALUES ( '"+file_name+"','COMPLETED','"+"','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','WEB')"))
                 db_connection.dispose()
                 shutil.move(user_upload_pdf_path+file_name,invoice_folder_path+'completed/'+file_name)
                 return jsonify({'description_data':description_detail,'other_data':other_detail,'description_detail_header':description_detail_header,'other_detail_header':other_detail_header,'message':'Completed'})
             
         except Exception as e:
             # print(e)
-            db_connection.connect().execute(text("INSERT INTO PDF_AUDIT VALUES ( '"+file_name+"','ISSUE','"+str(e).replace("'","").replace(","," ")+"','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','WEB')"))
+            db_connection.connect().execute(text("INSERT INTO pdf_audit VALUES ( '"+file_name+"','ISSUE','"+str(e).replace("'","").replace(","," ")+"','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','WEB')"))
             db_connection.dispose()
             shutil.move(user_upload_pdf_path+file_name,invoice_folder_path+'issue/'+file_name)
             return jsonify({'data':'','message':'Error occured please ensure you have select the correct pdf'})

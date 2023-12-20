@@ -54,7 +54,7 @@ class ProductMapping() :
         final_df.fillna('',inplace=True)
         # print(final_df)
         # final_df.to_csv('final.csv',index=False)
-        final_df.to_sql(name='PRODUCT_MAPPING',con=db_connection,if_exists='replace',index=False)
+        final_df.to_sql(name='product_mapping',con=db_connection,if_exists='replace',index=False)
         db_connection.dispose()
         obj_update_gsheet = UpdateDataInGsheetClass(product_mapping_spread_sheet_id,product_mapping_spread_sheet_range)
         obj_update_gsheet.update_values(final_df)
