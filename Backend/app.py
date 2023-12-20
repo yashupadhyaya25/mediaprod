@@ -108,8 +108,8 @@ def ocr():
                 #### Check Whether The Invoice Is Already Present In DB Or Not ####  
                 with db_connection.connect() as conn :      
                     conn.execute(text("INSERT INTO logs VALUES ( '"+file_name+"','COMPLETED','"+"','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','WEB')"))
-                conn.commit()
-                conn.close()    
+                    conn.commit()
+                    conn.close()    
                 db_connection.dispose()
                 shutil.move(user_upload_pdf_path+file_name,invoice_folder_path+'completed/'+file_name)
                 return jsonify({'description_data':description_detail,'other_data':other_detail,'description_detail_header':description_detail_header,'other_detail_header':other_detail_header,'message':'Completed'})
@@ -118,8 +118,8 @@ def ocr():
             # print(e)
             with db_connection.connect() as conn :
                 conn.execute(text("INSERT INTO logs VALUES ( '"+file_name+"','ISSUE','"+str(e).replace("'","").replace(","," ")+"','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','WEB')"))
-            conn.commit()
-            conn.close()
+                conn.commit()
+                conn.close()
             db_connection.dispose()
             shutil.move(user_upload_pdf_path+file_name,invoice_folder_path+'issue/'+file_name)
             return jsonify({'data':'','message':'Error occured please ensure you have select the correct pdf'})

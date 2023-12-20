@@ -101,23 +101,23 @@ if file_list != [] :
                         #### Check Whether The Invoice Is Already Present In DB Or Not ####
                         with db_connection.connect() as conn :
                             conn.execute(text("INSERT INTO logs VALUES ( '"+file+"','COMPLETED','"+"','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','MAIL')"))
-                        conn.commit()
-                        conn.close()
+                            conn.commit()
+                            conn.close()
                         db_connection.dispose()
                         shutil.move(user_upload_pdf_path+file,invoice_folder_path+'completed/'+file)
                     else :
                         with db_connection.connect() as conn :
                             conn.execute(text("INSERT INTO logs VALUES ( '"+file+"','COMPLETED','"+"','"+"DataFrame Is Empty','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','MAIL')"))
-                        conn.commit()
-                        conn.close()
+                            conn.commit()
+                            conn.close()
                         shutil.move(user_upload_pdf_path+file,invoice_folder_path+'issue/'+file)
                         db_connection.dispose()
                 except Exception as e :
                     print(e)
                     with db_connection.connect() as conn :
                         conn.execute(text("INSERT INTO logs VALUES ( '"+file+"','ISSUE','"+str(e).replace("'","").replace(","," ")+"','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','MAIL')"))
-                    conn.commit()
-                    conn.close()
+                        conn.commit()
+                        conn.close()
                     shutil.move(user_upload_pdf_path+file,invoice_folder_path+'issue/'+file)
                     db_connection.dispose()
                     continue
