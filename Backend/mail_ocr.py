@@ -99,16 +99,16 @@ if file_list != [] :
                                 other_detail_to_db_df.to_sql(name = 'INVOICE_TOTAL',con = db_connection,if_exists = 'append',index = False,dtype=None,chunksize = 100,method='multi')
                                 
                         #### Check Whether The Invoice Is Already Present In DB Or Not ####
-                        db_connection.connect().execute(text("INSERT INTO pdf_audit VALUES ( '"+file+"','COMPLETED','"+"','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','MAIL')"))
+                        db_connection.connect().execute(text("INSERT INTO logs VALUES ( '"+file+"','COMPLETED','"+"','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','MAIL')"))
                         db_connection.dispose()
                         shutil.move(user_upload_pdf_path+file,invoice_folder_path+'completed/'+file)
                     else :
-                        db_connection.connect().execute(text("INSERT INTO pdf_audit VALUES ( '"+file+"','COMPLETED','"+"','"+"DataFrame Is Empty','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','MAIL')"))
+                        db_connection.connect().execute(text("INSERT INTO logs VALUES ( '"+file+"','COMPLETED','"+"','"+"DataFrame Is Empty','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','MAIL')"))
                         shutil.move(user_upload_pdf_path+file,invoice_folder_path+'issue/'+file)
                         db_connection.dispose()
                 except Exception as e :
                     # print(e)
-                    db_connection.connect().execute(text("INSERT INTO pdf_audit VALUES ( '"+file+"','ISSUE','"+str(e).replace("'","").replace(","," ")+"','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','MAIL')"))
+                    db_connection.connect().execute(text("INSERT INTO logs VALUES ( '"+file+"','ISSUE','"+str(e).replace("'","").replace(","," ")+"','"+dt.strftime(dt.now(),'%Y-%m-%d %H:%M:%S')+"','MAIL')"))
                     shutil.move(user_upload_pdf_path+file,invoice_folder_path+'issue/'+file)
                     db_connection.dispose()
                     continue
