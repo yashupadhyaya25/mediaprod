@@ -14,13 +14,6 @@ Backend/Invoices/issue/*.pdf
 Backend/User_Upload/Image/*.png
 Backend/User_Upload/Pdf/*.pdf
 
-# ignore all files from ML folder execpt .py and .pickle
-ML/ML - InvoicesPDF/
-ML/Dataset/
-ML/Image/
-ML/Image/
-ML/Train_txt/
-
 # ignore log file
 Backend/app.log
 
@@ -36,3 +29,9 @@ __pycache__/
 
 
 Frontend/src/components/config.js
+*.pdf
+*.txt
+*.png
+*.csv
+Backend/gsheet_token.json
+Backend/gsheet_credentials.json

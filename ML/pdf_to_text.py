@@ -3,14 +3,23 @@ import os
 import pytesseract
 from PIL import Image
 import pdf2image
+import shutil
 
 def pdf_to_text():
-    pytesseract.pytesseract.tesseract_cmd = r'C:/Program Files/Tesseract-OCR/tesseract.exe'
-    pdf_file_path = r'Training_PDFs/'
+    #### If you dont have tesseract install it from : 
+    # Download tesseract exe from https://github.com/UB-Mannheim/tesseract/wiki.
+    # Install this exe in Any folder of your choice
+    # Run pip install pytesseract
+    ####################################################################
+    pytesseract.pytesseract.tesseract_cmd = r'Tesseract-OCR/tesseract.exe' ## just give path till tesseract.exe that you have installed in above step
+    pdf_file_path = r'ML/ML - InvoicesPDF/Training_PDFs/'
+    trained_pdf_file_path = r'ML/ML - InvoicesPDF/Trained PDFs/'
     image_path = r'ML/Image/'
     txt_file_path = r'ML/Train_txt/'
     for folder in os.listdir(pdf_file_path) :
         print(folder)
+        if not os.path.exists(trained_pdf_file_path+folder) :
+            os.makedirs(trained_pdf_file_path+folder)
         for file in os.listdir(pdf_file_path+folder):
             # print(file)
             if '.ini' not in file :           
@@ -34,6 +43,7 @@ def pdf_to_text():
                     with open (txt_file_path+folder+'/'+file.split('.pdf')[0]+'.txt',mode='w') as txt_file_writer:
                         txt_file_writer.writelines(text)
                     txt_file_writer.close()
+                shutil.move(pdf_file_path+folder+'/'+file,trained_pdf_file_path+folder+'/'+file) 
 
 if '__main__' == __name__ :
     pdf_to_text()
