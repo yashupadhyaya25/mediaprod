@@ -36,7 +36,7 @@ CREATE TABLE `invoice_total` (
 
 **PDF AUDIT**
 
-CREATE TABLE `PDF_AUDIT` (
+CREATE TABLE `logs` (
   `PDF_NAME` varchar(500) DEFAULT NULL,
   `STATUS` varchar(45) DEFAULT NULL,
   `ERROR_MESSAGE` longtext DEFAULT NULL,
