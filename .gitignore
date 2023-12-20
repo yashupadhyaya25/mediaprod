@@ -33,3 +33,5 @@ Frontend/src/components/config.js
 *.txt
 *.png
 *.csv
+Backend/gsheet_token.json
+Backend/gsheet_credentials.json
