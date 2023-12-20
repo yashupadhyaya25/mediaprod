@@ -1,0 +1,1 @@
+"C:\Users\Administrator\AppData\Local\Programs\Python\Python310\python.exe" "C:\Github\mediaprod\Backend\product_mapping.py"
